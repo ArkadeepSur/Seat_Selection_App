@@ -7,39 +7,51 @@ from flask_migrate import Migrate
 
 # Initialize Flask extensions
 db = SQLAlchemy()
-migrate = Migrate()
 login_manager = LoginManager()
+login_manager.login_view = "auth.login"  # Redirect to login page if not logged in
 socketio = SocketIO()
 mail = Mail()
 
 def create_app():
-    """Creates and configures the Flask application."""
     app = Flask(__name__)
     app.config.from_object('config.Config')
 
+    # Load configuration
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.secret_key = 'password'
+
     # Initialize Flask extensions
     db.init_app(app)
-    migrate.init_app(app, db)
     login_manager.init_app(app)
     socketio.init_app(app)
     mail.init_app(app)
 
-    login_manager.login_view = "auth.login"  # Redirect unauthorized users to login
+    # Flask-Migrate for handling migrations
+    from flask_migrate import Migrate
+    Migrate(app, db)
 
-    # Import and register Blueprints
-    from .routes import routes
-    from .auth import auth
-    from .booking import booking
+    # Import models here to avoid circular import
+    from app.models import User
 
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
+
+    # Register Blueprints
+    from app.routes import routes
+    from app.auth import auth
     app.register_blueprint(routes)
     app.register_blueprint(auth)
-    app.register_blueprint(booking)
 
-    # Ensure tables are created
+    # Ensure models are created
     with app.app_context():
         db.create_all()
+        # Check if tables exist
+        inspector = db.inspect(db.engine)
+        if not inspector.get_table_names():
+            print("No tables found in the database!")
+        else:
+            print(f"Tables found: {inspector.get_table_names()}")
 
     return app
-
-# Create the Flask app instance
-app = create_app()

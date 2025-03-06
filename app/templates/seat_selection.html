@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seat Selection</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+
+    <div class="max-w-4xl mx-auto mt-10 bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-bold mb-4">Select a Seat</h2>
+        
+        <div id="seats-container" class="grid grid-cols-5 gap-4">
+            <!-- Seats will be dynamically inserted here -->
+        </div>
+
+        <button id="confirmBooking" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded">Confirm Booking</button>
+        <a href="{{ url_for('auth.logout') }}" class="mt-4 ml-4 text-red-500">Logout</a>
+    </div>
+
+    <script>
+        // Dummy seat data (replace with real data from the backend)
+        const seats = [
+            { id: 1, occupied: false },
+            { id: 2, occupied: false },
+            { id: 3, occupied: true },  // Example of an occupied seat
+            { id: 4, occupied: false },
+            { id: 5, occupied: true }
+        ];
+
+        const container = document.getElementById("seats-container");
+
+        seats.forEach(seat => {
+            const seatDiv = document.createElement("div");
+            seatDiv.className = `p-4 border rounded-lg text-center cursor-pointer ${
+                seat.occupied ? "bg-red-400 cursor-not-allowed" : "bg-green-400"
+            }`;
+            seatDiv.innerText = `Seat ${seat.id}`;
+            seatDiv.dataset.id = seat.id;
+
+            if (!seat.occupied) {
+                seatDiv.onclick = function () {
+                    document.querySelectorAll(".selected").forEach(el => el.classList.remove("selected"));
+                    seatDiv.classList.add("selected", "bg-yellow-300");
+                };
+            }
+
+            container.appendChild(seatDiv);
+        });
+
+        document.getElementById("confirmBooking").onclick = function () {
+            const selectedSeat = document.querySelector(".selected");
+            if (!selectedSeat) {
+                alert("Please select a seat before confirming.");
+                return;
+            }
+            alert(`Seat ${selectedSeat.dataset.id} booked!`);
+        };
+    </script>
+
+</body>
+</html>

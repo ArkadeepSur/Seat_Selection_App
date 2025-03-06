@@ -14,13 +14,15 @@
     {% endwith %}
     
     <form method="POST">
-        <label>Email:</label>
-        <input type="email" name="email" required>
-        
-        <label>Password:</label>
-        <input type="password" name="password" required>
-        
-        <button type="submit">Login</button>
+        {{ form.hidden_tag() }}  <!-- This includes CSRF token -->
+    
+    <label for="email">Email:</label>
+    {{ form.email }}
+    
+    <label for="password">Password:</label>
+    {{ form.password }}
+    
+    <button type="submit">Login</button>
     </form>
 </body>
 </html>
